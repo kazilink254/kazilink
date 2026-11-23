@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kazilink254.github.io/kazilink/sitemap.xml
