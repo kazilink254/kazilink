@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KaziLink Kenya – Find Jobs in Kenya | Post Jobs Free of Hassle</title>
+<meta name="description" content="KaziLink Kenya connects job seekers and employers across Nairobi, Mombasa, Kisumu, Nakuru and all counties. Create your profile, upload your CV and apply for jobs in Kenya today.">
+<meta name="keywords" content="jobs in Kenya, Kenya vacancies, Nairobi jobs, hire in Kenya, CV, employment Kenya">
+<link rel="canonical" href="https://kazilink254.github.io/kazilink/">
+<meta property="og:title" content="KaziLink Kenya – Jobs in Kenya">
+<meta property="og:description" content="Find jobs and hire talent across Kenya.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"KaziLink Kenya","url":"https://kazilink254.github.io/kazilink/"}</script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!--
+=========== SETUP (see CONFIG below) ===========
+1. Put YOUR M-Pesa Till number in TILL and your own email in ADMIN_EMAIL.
+2. Demo mode (FIREBASE:null) stores data only in the visitor's browser. For a REAL site create a free
+   Firebase project (Spark plan), enable Email/Password sign-in + Firestore, and paste its config into FIREBASE.
+3. Firestore > Rules, paste (already set to your email):
+rules_version='2';service cloud.firestore{match /databases/{d}/documents{
+ function admin(){return request.auth!=null&&request.auth.token.email=='newstusmwas@gmail.com';}
+ match /jobs/{j}{allow read:if true;allow create:if request.auth!=null;allow update,delete:if admin()||resource.data.employerId==request.auth.uid;}
+ match /users/{u}{allow read:if request.auth!=null&&(request.auth.uid==u||admin());allow create:if request.auth.uid==u&&((request.resource.data.role=='seeker'&&request.resource.data.status=='unpaid')||(request.resource.data.role=='employer'&&request.resource.data.status=='active'));
+  allow update:if admin()||(request.auth.uid==u&&request.resource.data.role==resource.data.role&&((resource.data.status!='active'&&request.resource.data.status in ['unpaid','pending'])||(resource.data.status=='active'&&request.resource.data.status=='active')));}
+ match /apps/{a}{allow create:if request.auth!=null&&request.resource.data.userId==request.auth.uid&&get(/databases/$(d)/documents/users/$(request.auth.uid)).data.role=='seeker'&&get(/databases/$(d)/documents/users/$(request.auth.uid)).data.status=='active';allow read:if request.auth!=null&&(admin()||resource.data.userId==request.auth.uid||resource.data.employerId==request.auth.uid);}
+}}
+=================================================
+-->
+<style>
+:root{--ink:#14211b;--green:#0b6b43;--green2:#e3f1ea;--red:#c8102e;--bg:#f5f7f4;--card:#fff;--line:#d9e1dc;--mute:#5b6b63}
+*{box-sizing:border-box;margin:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;line-height:1.1;letter-spacing:-.02em}
+a{color:var(--green)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px}
+header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:5}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;gap:10px}
+.logo{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.3rem;color:#fff;text-decoration:none}
+.logo i{font-style:normal;color:#5fd39b}
+nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+nav a{color:#fff;text-decoration:none;font-size:.92rem;padding:6px 10px;border-radius:8px}
+nav a:hover,nav a:focus-visible{background:#ffffff22;outline:none}
+nav a.cta{background:var(--red);font-weight:700}
+.hero{background:var(--green);color:#fff;padding:44px 0 56px;border-bottom:8px solid var(--ink);box-shadow:0 8px 0 var(--red)}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);max-width:15ch;font-weight:800}
+.hero p{margin:14px 0 24px;max-width:48ch;opacity:.92}
+.search{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;background:#fff;padding:10px;border-radius:12px;max-width:820px}
+input,select,textarea{font:inherit;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;width:100%;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #5fd39b;outline-offset:1px}
+.search input,.search select{border-color:transparent;background:var(--bg)}
+.btn{font:inherit;font-weight:700;background:var(--green);color:#fff;border:0;border-radius:8px;padding:11px 18px;cursor:pointer}
+.btn.red{background:var(--red)}.btn.ghost{background:var(--green2);color:var(--green)}
+.btn:disabled{opacity:.5}
+section{padding:30px 0}
+.count{color:var(--mute);margin:0 0 14px}
+.job{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:10px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.job h3{font-size:1.15rem}.job small{color:var(--mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{background:var(--green2);color:var(--green);font-size:.78rem;padding:2px 9px;border-radius:99px;font-weight:500}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.how div{border-top:3px solid var(--ink);padding-top:10px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;max-width:560px;margin:28px auto}
+.panel.wide{max-width:820px}
+label{display:block;font-weight:500;font-size:.9rem;margin:12px 0 4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pay{background:var(--green2);border:2px dashed var(--green);border-radius:10px;padding:16px;margin:14px 0}
+.pay b.till{font-size:1.8rem;font-family:'Bricolage Grotesque'}
+.pay ol{padding-left:20px;margin-top:8px}
+.note{color:var(--mute);font-size:.88rem;margin-top:10px}
+.err{color:var(--red);font-weight:500;margin-top:8px}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:20}
+#modal.on{display:flex}
+#modal>div{background:#fff;width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:22px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;display:none;z-index:30}
+.wa{position:fixed;right:16px;bottom:16px;background:#25d366;color:#fff;font-weight:700;text-decoration:none;padding:12px 18px;border-radius:99px;z-index:15;box-shadow:0 2px 8px #0004}
+footer{background:var(--ink);color:#c9d6cf;padding:24px 0;font-size:.88rem;margin-top:30px}
+.tbl{width:100%;border-collapse:collapse;font-size:.9rem}.tbl td,.tbl th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+@media(max-width:700px){.search,.row,.how{grid-template-columns:1fr}.job{flex-direction:column;align-items:flex-start}#modal{align-items:flex-end}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="logo" href="#/">Kazi<i>Link</i></a><nav id="nav"></nav></div></header>
+<main id="app"></main>
+<footer><div class="wrap">© <span id="yr"></span> KaziLink Kenya. Job seekers pay a one-time Ksh 50 registration fee via M-Pesa. Employers post jobs free. We never ask for any other payment to get a job — report suspicious employers to us.</div></footer>
+<a class="wa" id="wa" target="_blank" rel="noopener">WhatsApp us</a>
+<div id="modal"><div id="mbox"></div></div><div id="toast"></div>
+
+<script>
+/* ============ CONFIG – EDIT THESE ============ */
+const CONFIG={
+  SITE:"KaziLink Kenya",
+  TILL:"5393346",                // your M-Pesa Buy Goods Till number
+  WHATSAPP:"254735491901",       // your WhatsApp number (no + or spaces)
+  FEE:50,
+  ADMIN_EMAIL:"newstusmwas@gmail.com", // the email you register with to approve payments
+  FIREBASE:{
+    apiKey:"AIzaSyBgBKk-mz5eK4NEn1aoq-xPZyJPLxn1Ie8",
+    authDomain:"kazilink-e17a8.firebaseapp.com",
+    projectId:"kazilink-e17a8",
+    storageBucket:"kazilink-e17a8.firebasestorage.app",
+    messagingSenderId:"113489320153",
+    appId:"1:113489320153:web:46a0de9aab2fd9d99406c8"
+  }
+};
+/* ============================================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const COUNTIES=["Nairobi","Mombasa","Kisumu","Nakuru","Eldoret","Kiambu","Machakos","Kajiado","Nyeri","Thika","Kisii","Meru","Kakamega","Garissa","Remote","Other"];
+const CATS=["Accounting & Finance","IT & Software","Sales & Marketing","Health","Education","Engineering","Hospitality","Driving & Logistics","Security","Casual & Manual","Other"];
+const TYPES=["Full-time","Part-time","Contract","Internship","Casual"];
+const opts=(a,first)=>(first?`<option value="">${first}</option>`:"")+a.map(x=>`<option>${esc(x)}</option>`).join("");
+$("#yr").textContent=new Date().getFullYear();
+$("#wa").href="https://wa.me/"+CONFIG.WHATSAPP+"?text="+encodeURIComponent("Hello KaziLink, I need help.");
+
+/* ---------- Data layer: Firebase or browser demo ---------- */
+const demo=!CONFIG.FIREBASE;let fdb,fauth;
+if(!demo){firebase.initializeApp(CONFIG.FIREBASE);fdb=firebase.firestore();fauth=firebase.auth();}
+const L=k=>JSON.parse(localStorage.getItem("kl_"+k)||"[]"),S=(k,v)=>localStorage.setItem("kl_"+k,JSON.stringify(v));
+const DB={
+  async list(c,f,v){
+    if(demo){let a=L(c);return f?a.filter(x=>x[f]===v):a}
+    let q=fdb.collection(c);if(f)q=q.where(f,"==",v);
+    return (await q.get()).docs.map(d=>({id:d.id,...d.data()}));
+  },
+  async add(c,o){
+    if(demo){o.id=Date.now()+""+Math.floor(Math.random()*999);S(c,[...L(c),o]);return o}
+    const r=await fdb.collection(c).add(o);return{...o,id:r.id};
+  },
+  async set(c,id,o){
+    if(demo){S(c,L(c).map(x=>x.id===id?{...x,...o}:x));return}
+    await fdb.collection(c).doc(id).set(o,{merge:true});
+  },
+  async get(c,id){
+    if(demo)return L(c).find(x=>x.id===id)||null;
+    const d=await fdb.collection(c).doc(id).get();return d.exists?{id:d.id,...d.data()}:null;
+  }
+};
+let me=null,JOBS=[];
+async function register(email,pw,prof){
+  if(demo){
+    if(L("users").some(u=>u.email===email))throw Error("This email is already registered.");
+    const u=await DB.add("users",{...prof,email,pw});localStorage.setItem("kl_me",u.id);return me=u;
+  }
+  const c=await fauth.createUserWithEmailAndPassword(email,pw);
+  await DB.set("users",c.user.uid,{...prof,email});me=await DB.get("users",c.user.uid);
+}
+async function login(email,pw){
+  if(demo){
+    const u=L("users").find(u=>u.email===email&&u.pw===pw);
+    if(!u)throw Error("Wrong email or password.");localStorage.setItem("kl_me",u.id);return me=u;
+  }
+  const c=await fauth.signInWithEmailAndPassword(email,pw);me=await DB.get("users",c.user.uid);
+}
+async function logout(){if(demo)localStorage.removeItem("kl_me");else await fauth.signOut();me=null;location.hash="#/";render();}
+const isAdmin=()=>me&&me.email===CONFIG.ADMIN_EMAIL;
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",3200)}
+function friendly(e){const m=e.code||"";
+  if(m.includes("email-already"))return"This email is already registered.";
+  if(m.includes("weak"))return"Password must have at least 6 characters.";
+  if(m.includes("invalid")||m.includes("wrong")||m.includes("user-not"))return"Wrong email or password.";
+  return e.message||"Something went wrong. Try again."}
+
+/* ---------- Navigation ---------- */
+function renderNav(){
+  let h=`<a href="#/">Jobs</a>`;
+  if(!me)h+=`<a href="#/login">Log in</a><a class="cta" href="#/register">Join free</a>`;
+  else{h+=`<a href="#/dashboard">My account</a>`;if(isAdmin())h+=`<a href="#/admin">Admin</a>`;h+=`<a href="#" id="out">Log out</a>`}
+  $("#nav").innerHTML=h;const o=$("#out");if(o)o.onclick=e=>{e.preventDefault();logout()};
+}
+async function render(){
+  const r=location.hash.slice(2);renderNav();window.scrollTo(0,0);
+  if(r==="login"||r==="register")return authView(r);
+  if(r==="dashboard")return dash();
+  if(r==="admin")return admin();
+  return home();
+}
+window.addEventListener("hashchange",render);
+
+/* ---------- Home & job list ---------- */
+async function loadJobs(){
+  JOBS=await DB.list("jobs");
+  if(demo&&!JOBS.length){
+    const s=[["Sales Executive","Savanna Foods Ltd","Nairobi","Sales & Marketing","Full-time","Ksh 45,000 + commission","Sell our products to supermarkets and wholesalers. 2 years experience, own transport an advantage."],
+    ["Accounts Assistant","Pwani Logistics","Mombasa","Accounting & Finance","Full-time","Ksh 40,000","CPA Part 2 or equivalent. Handle invoicing, reconciliations and statutory returns."],
+    ["Frontend Developer","Kisumu Digital Hub","Remote","IT & Software","Contract","Ksh 80,000","Build web apps with HTML, CSS, JavaScript and React. Portfolio required."],
+    ["Primary School Teacher","Bright Future Academy","Nakuru","Education","Full-time","Ksh 30,000","TSC registered teacher for Grade 4–6 Mathematics and Science."]];
+    for(const x of s)await DB.add("jobs",{title:x[0],company:x[1],county:x[2],category:x[3],type:x[4],salary:x[5],desc:x[6],how:"Apply through KaziLink.",employerId:"seed",date:new Date().toISOString()});
+    JOBS=await DB.list("jobs");
+  }
+  JOBS.sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+}
+async function home(){
+  $("#app").innerHTML=`
+  <div class="hero"><div class="wrap"><h1>Find your next job in Kenya</h1>
+  <p>Create one profile with your CV and contacts, then apply to employers from Nairobi to Mombasa. Employers: post vacancies and receive applications directly.</p>
+  <div class="search"><input id="q" placeholder="Job title or company" aria-label="Search jobs"><select id="fc" aria-label="County">${opts(COUNTIES,"All counties")}</select><select id="fk" aria-label="Category">${opts(CATS,"All categories")}</select></div></div></div>
+  <section><div class="wrap"><p class="count" id="cnt"></p><div id="list"></div></div></section>
+  <section><div class="wrap"><h2 style="margin-bottom:16px">How it works</h2><div class="how">
+  <div><h3>Register</h3><p>Job seekers pay a one-time Ksh ${CONFIG.FEE} via M-Pesa. Employers join free.</p></div>
+  <div><h3>Build your profile</h3><p>Add your contacts, skills and CV link once.</p></div>
+  <div><h3>Apply or hire</h3><p>Job seekers apply in one tap. Employers post jobs and see applicants.</p></div></div></div></section>`;
+  await loadJobs();
+  const f=()=>{
+    const q=$("#q").value.toLowerCase(),c=$("#fc").value,k=$("#fk").value;
+    const a=JOBS.filter(j=>(!q||(j.title+j.company).toLowerCase().includes(q))&&(!c||j.county===c)&&(!k||j.category===k));
+    $("#cnt").textContent=a.length+" job"+(a.length===1?"":"s")+" found";
+    $("#list").innerHTML=a.length?a.map(j=>`<div class="job"><div><h3>${esc(j.title)}</h3><small>${esc(j.company)}</small>
+    <div class="tags"><span class="tag">${esc(j.county)}</span><span class="tag">${esc(j.category)}</span><span class="tag">${esc(j.type)}</span>${j.salary?`<span class="tag">${esc(j.salary)}</span>`:""}</div></div>
+    <button class="btn" data-id="${esc(j.id)}">View job</button></div>`).join(""):`<p>No jobs match your search. Try another county or category.</p>`;
+    document.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>jobModal(b.dataset.id));
+  };
+  ["q","fc","fk"].forEach(i=>$("#"+i).oninput=f);f();
+}
+function jobModal(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  $("#mbox").innerHTML=`<h2>${esc(j.title)}</h2><p><b>${esc(j.company)}</b> – ${esc(j.county)}</p>
+  <div class="tags"><span class="tag">${esc(j.category)}</span><span class="tag">${esc(j.type)}</span>${j.salary?`<span class="tag">${esc(j.salary)}</span>`:""}</div>
+  <p style="margin:14px 0;white-space:pre-wrap">${esc(j.desc)}</p>
+  <button class="btn red" id="ap">Apply now</button> <button class="btn ghost" id="cl">Close</button>`;
+  $("#modal").classList.add("on");$("#cl").onclick=closeModal;$("#ap").onclick=()=>apply(j);
+}
+function closeModal(){$("#modal").classList.remove("on")}
+$("#modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+async function apply(j){
+  if(!me){closeModal();toast("Create an account to apply");location.hash="#/register";return}
+  if(me.role!=="seeker")return toast("Employer accounts cannot apply");
+  if(me.status!=="active"){closeModal();toast("Finish your Ksh "+CONFIG.FEE+" registration first");location.hash="#/dashboard";return}
+  if(!me.cvLink){closeModal();toast("Add your CV link to your profile first");location.hash="#/dashboard";return}
+  const ex=(await DB.list("apps","userId",me.id)).find(a=>a.jobId===j.id);
+  if(ex)return toast("You already applied for this job");
+  await DB.add("apps",{jobId:j.id,jobTitle:j.title,employerId:j.employerId,userId:me.id,name:me.name,email:me.email,phone:me.phone,county:me.county||"",skills:me.skills||"",education:me.education||"",cvLink:me.cvLink,date:new Date().toISOString()});
+  closeModal();toast("Application sent. Good luck!");
+}
+
+/* ---------- Register / Login ---------- */
+function authView(mode){
+  const reg=mode==="register";
+  $("#app").innerHTML=`<div class="panel"><h2>${reg?"Create your account":"Welcome back"}</h2>
+  <form id="f" novalidate>
+  ${reg?`<label>I am a</label><select id="role"><option value="seeker">Job seeker</option><option value="employer">Employer</option></select>
+  <label id="nl">Full name</label><input id="name" autocomplete="name">
+  <label>Phone (M-Pesa number)</label><input id="phone" type="tel" placeholder="0712345678" autocomplete="tel">`:""}
+  <label>Email</label><input id="email" type="email" autocomplete="email">
+  <label>Password</label><input id="pw" type="password" autocomplete="${reg?"new-password":"current-password"}" placeholder="At least 6 characters">
+  <p class="err" id="err"></p><br><button class="btn" style="width:100%">${reg?"Create account":"Log in"}</button></form>
+  <p class="note">${reg?`Job seekers pay Ksh ${CONFIG.FEE} once to activate their account. Employers join free. <a href="#/login">I already have an account</a>`:`New here? <a href="#/register">Create an account</a>`}</p></div>`;
+  if(reg)$("#role").onchange=e=>$("#nl").textContent=e.target.value==="employer"?"Company name":"Full name";
+  $("#f").onsubmit=async e=>{
+    e.preventDefault();const err=$("#err");err.textContent="";
+    const email=$("#email").value.trim(),pw=$("#pw").value;
+    try{
+      if(reg){
+        const name=$("#name").value.trim(),phone=$("#phone").value.trim();
+        if(!name||!/^(07|01|\+254)\d{7,9}$/.test(phone.replace(/\s/g,"")))throw Error("Enter your name and a valid Kenyan phone number.");
+        if(!email||pw.length<6)throw Error("Enter a valid email and a password of 6+ characters.");
+        const role=$("#role").value;await register(email,pw,{role,name,phone,status:role==="employer"?"active":"unpaid",created:new Date().toISOString()});
+      }else await login(email,pw);
+      location.hash="#/dashboard";render();
+    }catch(x){err.textContent=friendly(x)}
+  };
+}
+
+/* ---------- Dashboard ---------- */
+async function dash(){
+  if(!me){location.hash="#/login";return}
+  me=await DB.get("users",me.id)||me;
+  const A=$("#app");
+  if(me.role==="employer")return employerDash();
+  if(me.status==="unpaid"||me.status==="rejected"){
+    A.innerHTML=`<div class="panel"><h2>Activate your account</h2>
+    <p>Hello ${esc(me.name)}. Pay the one-time registration fee to unlock your profile, applications and job posting.</p>
+    ${me.status==="rejected"?`<p class="err">We could not find your last payment. Check the code and try again.</p>`:""}
+    <div class="pay"><b>Pay Ksh ${CONFIG.FEE}</b><br>Till number: <b class="till">${esc(CONFIG.TILL)}</b>
+    <ol><li>Open M-Pesa on your phone</li><li>Choose <b>Lipa na M-Pesa → Buy Goods and Services</b></li><li>Enter Till <b>${esc(CONFIG.TILL)}</b> and amount <b>${CONFIG.FEE}</b></li><li>Enter your PIN, then copy the code from the M-Pesa SMS</li></ol></div>
+    <label>M-Pesa confirmation code</label><input id="code" placeholder="e.g. SHK4X7ABCD" maxlength="12" style="text-transform:uppercase">
+    <p class="err" id="err"></p><br><button class="btn" id="go" style="width:100%">Submit payment code</button>
+    <p class="note">We verify your payment and activate your account, usually within a few hours.</p></div>`;
+    $("#go").onclick=async()=>{
+      const c=$("#code").value.trim().toUpperCase();
+      if(!/^[A-Z0-9]{10}$/.test(c))return $("#err").textContent="The code has 10 letters and numbers, for example SHK4X7ABCD.";
+      await DB.set("users",me.id,{status:"pending",mpesaCode:c,paidAt:new Date().toISOString()});dash();
+    };return;
+  }
+  if(me.status==="pending"){
+    A.innerHTML=`<div class="panel"><h2>Payment received</h2><p>Code <b>${esc(me.mpesaCode)}</b> is being verified. Your account will be active shortly. Refresh this page to check.</p><br><button class="btn" onclick="dash()">Check status</button></div>`;return;
+  }
+  me.role==="employer"?employerDash():seekerDash();
+}
+async function seekerDash(){
+  const apps=await DB.list("apps","userId",me.id);
+  $("#app").innerHTML=`<div class="panel wide"><h2>My profile</h2><p class="note" style="margin:0 0 6px">Employers see these details when you apply.</p>
+  <label>Full name</label><input id="n" value="${esc(me.name)}">
+  <div class="row"><div><label>Phone</label><input id="p" value="${esc(me.phone)}"></div><div><label>County</label><select id="c">${opts(COUNTIES,"Select")}</select></div></div>
+  <div class="row"><div><label>Highest education</label><input id="ed" value="${esc(me.education)}" placeholder="e.g. Diploma in ICT"></div><div><label>Years of experience</label><input id="ex" value="${esc(me.exp)}" placeholder="e.g. 3"></div></div>
+  <label>Key skills</label><textarea id="sk" rows="2" placeholder="e.g. Customer service, Excel, driving licence class B">${esc(me.skills)}</textarea>
+  <label>CV link (Google Drive / Dropbox, set to "anyone with the link")</label><input id="cv" value="${esc(me.cvLink)}" placeholder="https://drive.google.com/...">
+  <label>Short bio</label><textarea id="bio" rows="3">${esc(me.bio)}</textarea><br>
+  <button class="btn" id="sv">Save profile</button></div>
+  <div class="panel wide"><h2>My applications (${apps.length})</h2>${apps.length?`<table class="tbl">${apps.map(a=>`<tr><td>${esc(a.jobTitle)}</td><td>${new Date(a.date).toLocaleDateString()}</td></tr>`).join("")}</table>`:`<p>No applications yet. <a href="#/">Browse jobs</a></p>`}</div>`;
+  $("#c").value=me.county||"";
+  $("#sv").onclick=async()=>{
+    const cv=$("#cv").value.trim();if(cv&&!/^https?:\/\//.test(cv))return toast("CV link must start with https://");
+    await DB.set("users",me.id,{name:$("#n").value.trim(),phone:$("#p").value.trim(),county:$("#c").value,education:$("#ed").value,exp:$("#ex").value,skills:$("#sk").value,cvLink:cv,bio:$("#bio").value});
+    me=await DB.get("users",me.id);toast("Profile saved");
+  };
+}
+async function employerDash(){
+  const jobs=await DB.list("jobs","employerId",me.id),apps=await DB.list("apps","employerId",me.id);
+  $("#app").innerHTML=`<div class="panel wide"><h2>Post a job</h2>
+  <label>Job title</label><input id="t">
+  <div class="row"><div><label>County</label><select id="c">${opts(COUNTIES)}</select></div><div><label>Category</label><select id="k">${opts(CATS)}</select></div></div>
+  <div class="row"><div><label>Job type</label><select id="ty">${opts(TYPES)}</select></div><div><label>Salary (optional)</label><input id="s" placeholder="Ksh 50,000"></div></div>
+  <label>Description and requirements</label><textarea id="d" rows="5"></textarea><br><button class="btn" id="pj">Publish job</button></div>
+  <div class="panel wide"><h2>My jobs (${jobs.length})</h2>${jobs.length?jobs.map(j=>{
+    const a=apps.filter(x=>x.jobId===j.id);
+    return`<h3 style="margin-top:16px">${esc(j.title)} <small>– ${a.length} applicant${a.length===1?"":"s"}</small></h3>`+(a.length?`<table class="tbl">${a.map(x=>`<tr><td><b>${esc(x.name)}</b><br>${esc(x.skills)}</td><td>${esc(x.phone)}<br>${esc(x.email)}</td><td><a target="_blank" rel="noopener" href="${esc(x.cvLink)}">View CV</a></td></tr>`).join("")}</table>`:"")}).join(""):`<p>You have not posted any jobs yet.</p>`}</div>`;
+  $("#pj").onclick=async()=>{
+    const t=$("#t").value.trim(),d=$("#d").value.trim();if(!t||!d)return toast("Add a job title and description");
+    await DB.add("jobs",{title:t,company:me.name,county:$("#c").value,category:$("#k").value,type:$("#ty").value,salary:$("#s").value,desc:d,employerId:me.id,date:new Date().toISOString()});
+    toast("Job published");employerDash();
+  };
+}
+
+/* ---------- Admin: approve payments ---------- */
+async function admin(){
+  if(!isAdmin()){location.hash="#/";return}
+  const us=(await DB.list("users")).filter(u=>u.email!==CONFIG.ADMIN_EMAIL);
+  const pend=us.filter(u=>u.status==="pending"),act=us.filter(u=>u.status==="active");
+  $("#app").innerHTML=`<div class="panel wide"><h2>Payments to verify (${pend.length})</h2>
+  <p class="note" style="margin:0 0 8px">Open your M-Pesa Till statement and match the code and amount (Ksh ${CONFIG.FEE}) before approving.</p>
+  ${pend.length?`<table class="tbl"><tr><th>Name</th><th>Phone</th><th>Code</th><th></th></tr>${pend.map(u=>`<tr><td>${esc(u.name)}<br><small>${esc(u.role)}</small></td><td>${esc(u.phone)}</td><td><b>${esc(u.mpesaCode)}</b></td>
+  <td><button class="btn" data-a="${esc(u.id)}">Approve</button> <button class="btn ghost" data-r="${esc(u.id)}">Reject</button></td></tr>`).join("")}</table>`:`<p>No pending payments.</p>`}</div>
+  <div class="panel wide"><h2>Active members (${act.length})</h2><p>Estimated collected: <b>Ksh ${act.length*CONFIG.FEE}</b></p></div>`;
+  document.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{await DB.set("users",b.dataset.a,{status:"active"});toast("Approved");admin()});
+  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=async()=>{await DB.set("users",b.dataset.r,{status:"rejected"});toast("Rejected");admin()});
+}
+
+/* ---------- Start ---------- */
+(async()=>{
+  if(demo){const id=localStorage.getItem("kl_me");if(id)me=await DB.get("users",id);render();}
+  else fauth.onAuthStateChanged(async u=>{me=u?await DB.get("users",u.uid):null;render();});
+})();
+</script>
+</body>
+</html>
